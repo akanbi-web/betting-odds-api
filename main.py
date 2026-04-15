@@ -2,9 +2,8 @@ from fastapi import FastAPI, Header, HTTPException
 
 app = FastAPI()
 
-API_KEY = "my secrect key"
+API_KEY = "mysecret123"
 
-# better structured data
 odds_data = [
     {
         "league": "Premier League",
