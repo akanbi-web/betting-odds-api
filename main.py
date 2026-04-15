@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -36,7 +36,7 @@ def health():
     return {"status": "ok"}
 
 @app.get("/odds")
-def get_odds(x_api_key: str = Header(None)):
-    if x_api_key != API_KEY:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+def get_odds(api_key: str = None):
+    if api_key != API_KEY:
+        return {"error": "Unauthorized"}
     return odds_data
