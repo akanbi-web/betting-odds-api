@@ -2,7 +2,7 @@ from fastapi import FastAPI, Header, HTTPException
 
 app = FastAPI()
 
-API_KEY = "3b232f864b1bb1ad3f56f656870e96357ec1e2ef92227d6f1e62bb561efba871"
+API_KEY = "my secrect key"
 
 # better structured data
 odds_data = [
