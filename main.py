@@ -40,7 +40,10 @@ def get_odds(api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
     return odds_data
-    @app.get("/match")
+
+
+# ✅ THIS MUST BE OUTSIDE (very important)
+@app.get("/match")
 def get_match(team: str, api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
@@ -51,6 +54,7 @@ def get_match(team: str, api_key: str = None):
             result.append(match)
     
     return result
+
 
 @app.get("/status")
 def status():
