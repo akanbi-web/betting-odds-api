@@ -40,3 +40,22 @@ def get_odds(api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
     return odds_data
+    @app.get("/match")
+def get_match(team: str, api_key: str = None):
+    if api_key != API_KEY:
+        return {"error": "Unauthorized"}
+    
+    result = []
+    for match in odds_data:
+        if team.lower() in match["home"].lower() or team.lower() in match["away"].lower():
+            result.append(match)
+    
+    return result
+
+@app.get("/status")
+def status():
+    return {
+        "service": "Betting Odds API",
+        "status": "running",
+        "matches": len(odds_data)
+    }
