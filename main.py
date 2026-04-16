@@ -1,65 +1,53 @@
 from fastapi import FastAPI
+import json
 
 app = FastAPI()
 
 API_KEY = "mysecret123"
 
-odds_data = [
-    {
-        "league": "Premier League",
-        "home": "Chelsea",
-        "away": "Man City",
-        "odds": {
-            "home_win": 3.5,
-            "draw": 3.2,
-            "away_win": 2.1
-        }
-    },
-    {
-        "league": "La Liga",
-        "home": "Real Madrid",
-        "away": "Barcelona",
-        "odds": {
-            "home_win": 2.4,
-            "draw": 3.1,
-            "away_win": 2.8
-        }
-    }
-]
+
+def load_data():
+    try:
+        with open("odds.json", "r") as f:
+            return json.load(f)
+    except:
+        return []
+
 
 @app.get("/")
 def home():
     return {"message": "Betting Odds API is running"}
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.get("/odds")
 def get_odds(api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
-    return odds_data
+    return load_data()
 
 
-# ✅ THIS MUST BE OUTSIDE (very important)
 @app.get("/match")
 def get_match(team: str, api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
-    
+
     result = []
-    for match in odds_data:
-        if team.lower() in match["home"].lower() or team.lower() in match["away"].lower():
+    for match in load_data():
+        if team.lower() in match["home_team"].lower() or team.lower() in match["away_team"].lower():
             result.append(match)
-    
+
     return result
 
 
 @app.get("/status")
 def status():
     return {
-        "service": "Betting Odds API",
+        "service": "Football Odds API",
         "status": "running",
-        "matches": len(odds_data)
+        "matches": len(load_data())
     }
