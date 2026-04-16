@@ -33,6 +33,5 @@ def fetch_data():
         json.dump(data, f)
 
 
-# run automatically when file is executed
 if __name__ == "__main__":
     fetch_data()
