@@ -35,9 +35,12 @@ def health():
 def get_odds(api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
+    
+    data = load_data()
     return {
-        "count": len(load_data()),
-        "data": load_data()
+        "success": True,
+        "count": len(data),
+        "data": data
     }
 
 
@@ -46,12 +49,15 @@ def get_match(team: str, api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
 
+    data = load_data()
     result = []
-    for match in load_data():
+
+    for match in data:
         if team.lower() in match["home_team"].lower() or team.lower() in match["away_team"].lower():
             result.append(match)
 
     return {
+        "success": True,
         "count": len(result),
         "matches": result
     }
@@ -59,8 +65,10 @@ def get_match(team: str, api_key: str = None):
 
 @app.get("/status")
 def status():
+    data = load_data()
     return {
         "service": "Football Odds API",
         "status": "running",
-        "total_matches": len(load_data())
+        "total_matches": len(data),
+        "last_updated": data[0]["timestamp"] if data else None
     }
