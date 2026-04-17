@@ -4,11 +4,11 @@ from datetime import datetime, timedelta, timezone
 
 app = FastAPI()
 
-# your protection key
+# Your API protection key
 API_KEY = "mysecret123"
 
-# your real odds API key
-ODDS_API_KEY = "0704b60e5be58e6ac4113c2b7da0cd04cz"
+# Your Odds API key (correct one)
+ODDS_API_KEY = "0704b60e5be58e6ac4113c2b7da0cd04"
 
 
 @app.get("/")
@@ -33,7 +33,14 @@ def fetch_odds():
 
     try:
         response = requests.get(url, params=params)
-        return response.json()
+        data = response.json()
+
+        # prevent crash if API returns error
+        if isinstance(data, dict):
+            return []
+
+        return data
+
     except:
         return []
 
@@ -43,7 +50,7 @@ def check_key(api_key):
         raise HTTPException(401, "Unauthorized")
 
 
-# ================= ALL ODDS =================
+# ================= ALL MATCHES =================
 @app.get("/odds")
 def odds(api_key: str):
     check_key(api_key)
@@ -63,14 +70,15 @@ def today(api_key: str):
     check_key(api_key)
 
     data = fetch_odds()
-    today = datetime.now(timezone.utc).date()
+    today_date = datetime.now(timezone.utc).date()
 
     result = []
 
     for m in data:
         t = m.get("commence_time", "")
         try:
-            if datetime.fromisoformat(t.replace("Z", "+00:00")).date() == today:
+            match_date = datetime.fromisoformat(t.replace("Z", "+00:00")).date()
+            if match_date == today_date:
                 result.append(m)
         except:
             pass
@@ -88,14 +96,15 @@ def tomorrow(api_key: str):
     check_key(api_key)
 
     data = fetch_odds()
-    target = (datetime.now(timezone.utc) + timedelta(days=1)).date()
+    target_date = (datetime.now(timezone.utc) + timedelta(days=1)).date()
 
     result = []
 
     for m in data:
         t = m.get("commence_time", "")
         try:
-            if datetime.fromisoformat(t.replace("Z", "+00:00")).date() == target:
+            match_date = datetime.fromisoformat(t.replace("Z", "+00:00")).date()
+            if match_date == target_date:
                 result.append(m)
         except:
             pass
