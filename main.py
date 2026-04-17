@@ -1,29 +1,15 @@
 from fastapi import FastAPI
-import json
-import subprocess
+import requests
 
 app = FastAPI()
 
-API_KEY = "mysecret123"
-
-# run scraper on startup
-try:
-    subprocess.run(["python", "scraper.py"])
-except Exception as e:
-    print("Scraper failed:", e)
-
-
-def load_data():
-    try:
-        with open("odds.json", "r") as f:
-            return json.load(f)
-    except:
-        return []
+API_KEY = "mysecret123"  # your own API protection
+ODDS_API_KEY = "0704b60e5be58e6ac4113c2b7da0cd04cz"  # from Odds API
 
 
 @app.get("/")
 def home():
-    return {"message": "Betting Odds API is running"}
+    return {"message": "Real Betting Odds API is running"}
 
 
 @app.get("/health")
@@ -31,12 +17,27 @@ def health():
     return {"status": "ok"}
 
 
+def fetch_odds():
+    url = "https://api.the-odds-api.com/v4/sports/soccer/odds/"
+
+    params = {
+        "apiKey": ODDS_API_KEY,
+        "regions": "eu",
+        "markets": "h2h",
+        "oddsFormat": "decimal"
+    }
+
+    response = requests.get(url, params=params)
+    return response.json()
+
+
 @app.get("/odds")
 def get_odds(api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
-    
-    data = load_data()
+
+    data = fetch_odds()
+
     return {
         "success": True,
         "count": len(data),
@@ -49,7 +50,7 @@ def get_match(team: str, api_key: str = None):
     if api_key != API_KEY:
         return {"error": "Unauthorized"}
 
-    data = load_data()
+    data = fetch_odds()
     result = []
 
     for match in data:
@@ -65,10 +66,9 @@ def get_match(team: str, api_key: str = None):
 
 @app.get("/status")
 def status():
-    data = load_data()
+    data = fetch_odds()
     return {
-        "service": "Football Odds API",
+        "service": "Real Football Odds API",
         "status": "running",
-        "total_matches": len(data),
-        "last_updated": data[0]["timestamp"] if data else None
+        "total_matches": len(data)
     }
