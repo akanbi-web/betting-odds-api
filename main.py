@@ -4,10 +4,12 @@ from datetime import datetime, timedelta, timezone
 
 app = FastAPI()
 
-# Your API protection key
-API_KEY = "mysecret123"
+# ================= USERS =================
+USERS = {
+    "test123": {"limit": 20, "used": 0}
+}
 
-# Your Odds API key (correct one)
+# Odds API key
 ODDS_API_KEY = "0704b60e5be58e6ac4113c2b7da0cd04"
 
 
@@ -35,7 +37,6 @@ def fetch_odds():
         response = requests.get(url, params=params)
         data = response.json()
 
-        # prevent crash if API returns error
         if isinstance(data, dict):
             return []
 
@@ -45,20 +46,31 @@ def fetch_odds():
         return []
 
 
+# ================= AUTH =================
 def check_key(api_key):
-    if api_key != API_KEY:
+    user = USERS.get(api_key)
+
+    if not user:
         raise HTTPException(401, "Unauthorized")
+
+    if user["used"] >= user["limit"]:
+        raise HTTPException(429, "Limit reached")
+
+    user["used"] += 1
+    return user
 
 
 # ================= ALL MATCHES =================
 @app.get("/odds")
 def odds(api_key: str):
-    check_key(api_key)
+    user = check_key(api_key)
 
     data = fetch_odds()
 
     return {
         "success": True,
+        "used": user["used"],
+        "limit": user["limit"],
         "count": len(data),
         "data": data
     }
@@ -67,7 +79,7 @@ def odds(api_key: str):
 # ================= TODAY =================
 @app.get("/today")
 def today(api_key: str):
-    check_key(api_key)
+    user = check_key(api_key)
 
     data = fetch_odds()
     today_date = datetime.now(timezone.utc).date()
@@ -85,6 +97,8 @@ def today(api_key: str):
 
     return {
         "success": True,
+        "used": user["used"],
+        "limit": user["limit"],
         "count": len(result),
         "matches": result
     }
@@ -93,7 +107,7 @@ def today(api_key: str):
 # ================= TOMORROW =================
 @app.get("/tomorrow")
 def tomorrow(api_key: str):
-    check_key(api_key)
+    user = check_key(api_key)
 
     data = fetch_odds()
     target_date = (datetime.now(timezone.utc) + timedelta(days=1)).date()
@@ -111,6 +125,8 @@ def tomorrow(api_key: str):
 
     return {
         "success": True,
+        "used": user["used"],
+        "limit": user["limit"],
         "count": len(result),
         "matches": result
     }
